@@ -2,6 +2,8 @@ from telegram.ext import CommandHandler, Filters, MessageHandler, Updater
 
 from conf.settings import HTTP_CATS_URL, TELEGRAM_TOKEN
 
+from bs4 import BeautifulSoup
+from web import simple_get
 
 def start(bot, update):
     response_message = "=^._.^="
@@ -16,6 +18,23 @@ def http_cats(bot, update, args):
         photo=HTTP_CATS_URL + args[0]
     )
 
+
+def wod(bot, update):
+    print("Send msg")
+    raw_html = simple_get('http://vittoriacrossfit.com/')
+    html = BeautifulSoup(raw_html, 'html.parser')
+    mydivs = html.findAll("a", {"class": "post__item__mais"})
+
+    raw_html = simple_get(mydivs[0]['href'])
+    html = BeautifulSoup(raw_html, 'html.parser')
+    mydivs = html.findAll("section", {"class": "post-content"})
+
+    response_message = mydivs[0].text
+    print(response_message)
+    bot.send_message(
+        chat_id=update.message.chat_id,
+        text=response_message
+    )
 
 def unknown(bot, update):
     response_message = "Meow? =^._.^="
@@ -38,6 +57,9 @@ def main():
     )
     dispatcher.add_handler(
         CommandHandler('http', http_cats, pass_args=True)
+    )
+    dispatcher.add_handler(
+        CommandHandler('wod', wod)
     )
     dispatcher.add_handler(
         MessageHandler(Filters.command, unknown)
