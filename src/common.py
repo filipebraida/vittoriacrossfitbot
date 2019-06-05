@@ -28,4 +28,4 @@ def get_config():
     return ini_to_dict(CONFIG_PATH)
 
 def get_uri(settings):
-    return "sqlite:///" + settings["db"]["db_name"] + ".db"
+    return "sqlite:///" + os.path.join(os.path.dirname(__file__), "conf" ,"db", settings["db"]["db_name"] + ".db")
