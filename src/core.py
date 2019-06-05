@@ -1,6 +1,5 @@
 from telegram.ext import CommandHandler, Filters, MessageHandler, Updater
 
-from conf.settings import HTTP_CATS_URL, TELEGRAM_TOKEN
 from emoji import emojize
 
 from bs4 import BeautifulSoup
@@ -31,12 +30,6 @@ def init_db(uri):
     sqlite_engine = create_engine(uri)
     sqlite_engine.execute("CREATE TABLE IF NOT EXISTS `telegram_users` ( `id` INTEGER, `name` TEXT, `active` INTEGER, PRIMARY KEY(`id`) )")
     return
-
-def http_cats(bot, update, args):
-    bot.sendPhoto(
-        chat_id=update.message.chat_id,
-        photo=HTTP_CATS_URL + args[0]
-    )
 
 def help_reply() -> str:
     icon = emojize(":information_source: ", use_aliases=True)
@@ -100,9 +93,6 @@ def main():
         CommandHandler('start', start)
     )
     dispatcher.add_handler(
-        CommandHandler('http', http_cats, pass_args=True)
-    )
-    dispatcher.add_handler(
         CommandHandler('wod', wod)
     )
     dispatcher.add_handler(
@@ -124,8 +114,18 @@ def main():
 if __name__ == '__main__':
     from common import get_config, CONFIG_PATH, get_uri
 
-    print("press CTRL + C to cancel.")
     settings = get_config()
+
+    if not CONFIG_PATH:
+        print("Error, no config file")
+        sys.exit(1)
+
+    if ("main" not in settings) or ("token" not in settings["main"]):
+        print("Error, no token in config file")
+
+    TELEGRAM_TOKEN = settings["main"]["token"]
+
+    print("press CTRL + C to cancel.")    
 
     init_db(get_uri(settings))
 
