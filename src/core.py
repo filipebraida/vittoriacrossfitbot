@@ -35,7 +35,10 @@ def help_reply() -> str:
     icon = emojize(":information_source: ", use_aliases=True)
     text = icon + " Os seguintes comandos estão disponíveis:\n"
 
-    commands = [["/wod", "Lista o wod do dia'"],
+    commands = [["/wod", "Lista o wod do dia"],
+               ["/liga", "Liga a notificação diária"],
+               ["/desliga", "desliga a notificação diária"],
+               ["/status", "Verifica o status do usuário"],
                ["/help", "Recebe essa mensagem"]
                ]
 
@@ -59,11 +62,40 @@ def work_of_day() -> str:
 	return mydivs[0].text
 
 def wod(bot, update):
-    print('-- Command \\wod by ' + str(update.message.chat_id))
+    user = get_user(engine, update.message.chat_id)
+
+    if user is None:
+        insert_new_user_to_db(engine, update.message.from_user.id, update.message.from_user.full_name)
+
+    print('-- Command \\wod by ' + str(user))
     send_msg(bot, update, work_of_day())
 
-def unknown(bot, update):
-    send_msg(bot, update, help_reply())
+def unknown(bot, update):    
+    send_msg(bot, update, "Comando desconhecido. Utilize o \\help")
+
+def liga(bot, update):
+    user = get_user(engine, update.message.chat_id)
+
+    if user is None:
+        insert_new_user_to_db(engine, update.message.from_user.id, update.message.from_user.full_name)
+
+    send_msg(bot, update, user.msg_ativo())
+
+def desliga(bot, update):
+    user = get_user(engine, update.message.chat_id)
+
+    if user is None:
+        insert_new_user_to_db(engine, update.message.from_user.id, update.message.from_user.full_name)
+
+    send_msg(bot, update, user.msg_ativo())
+
+def status(bot, update):
+    user = get_user(engine, update.message.chat_id)
+
+    if user is None:
+        insert_new_user_to_db(engine, update.message.from_user.id, update.message.from_user.full_name)
+
+    send_msg(bot, update, user.msg_ativo())
 
 def insert_new_user_to_db(engine, telegram_id, name, active=True):
     Session = sessionmaker()
@@ -73,6 +105,13 @@ def insert_new_user_to_db(engine, telegram_id, name, active=True):
     session.add(entry)
     session.commit()
     return
+
+def get_user(engine, telegram_id):
+    Session = sessionmaker()
+    Session.configure(bind=engine)
+    session = Session()
+    result = session.query(TelegramUser).filter(TelegramUser.id == telegram_id).first()
+    return result
 
 def has_user(engine, telegram_id):
     Session = sessionmaker()
@@ -94,6 +133,15 @@ def main():
     )
     dispatcher.add_handler(
         CommandHandler('wod', wod)
+    )
+    dispatcher.add_handler(
+        CommandHandler('liga', liga)
+    )
+    dispatcher.add_handler(
+        CommandHandler('desliga', desliga)
+    )
+    dispatcher.add_handler(
+        CommandHandler('status', status)
     )
     dispatcher.add_handler(
         CommandHandler('help', help)

@@ -106,5 +106,3 @@ venv.bak/
 # Envioriment variable
 .env
 config.ini
-
-.db

@@ -17,4 +17,10 @@ class TelegramUser(Base):
         self.active = active
 
     def __repr__(self):
-        return "%id=s,active=%s,name=%s" % (self.id, self.active, self.name)
+        return "id=%i,active=%s,name=%s" % (self.id, self.active, self.name)
+
+    def msg_ativo(self):
+        if self.active is True:
+            return "Você está ativo"
+        else:
+            return "Você não está ativo"
