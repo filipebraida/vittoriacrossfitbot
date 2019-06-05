@@ -28,4 +28,8 @@ def get_config():
     return ini_to_dict(CONFIG_PATH)
 
 def get_uri(settings):
-    return "sqlite:///" + os.path.join(os.path.dirname(__file__), "conf" ,"db", settings["db"]["db_name"] + ".db")
+    directory = os.path.join(os.path.dirname(__file__), "conf" ,"db")
+    if not os.path.exists(directory):
+        os.makedirs(directory)
+    
+    return "sqlite:///" + os.path.join(directory, settings["db"]["db_name"] + ".db")
